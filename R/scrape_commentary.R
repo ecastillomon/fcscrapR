@@ -146,7 +146,7 @@ scrape_commentary <- function(game_id) {
   incorrect_team_i <- which(!(original_game_teams %in% commentary_game_teams))
 
   # If the length of this is 1 exactly then modify that team in game_teams:
-  if (length(incorrect_team_i) == 1) {
+  if (length(incorrect_team_i) >= 1) {
     game_teams[incorrect_team_i] <- commentary_game_teams[incorrect_team_i]
   }
 
@@ -595,10 +595,10 @@ scrape_commentary <- function(game_id) {
                                                          stringr::str_extract(team_two_penalty_score,
                                                                               "\\(([:digit:]){1}\\)") %>%
                                                            stringr::str_extract("([:digit:]){1}"),
-                                                         0), NA),
+                                                         0), NA))
                   # Make the teams the old names again to match the top:
-                  team_one = original_game_teams[1],
-                  team_two = original_game_teams[2])
+                  # team_one = original_game_teams[1],
+                  # team_two = original_game_teams[2])
     # Create a new form of match_time that is numeric:
     commentary_df$match_time_numeric <- sapply(c(1:nrow(commentary_df)),
                                               function(x) {

@@ -53,21 +53,39 @@ scrape_scoreboard_ids <- function(scoreboard_name = "show all leagues",
     # game id and columns denoting the two teams:
     games_df <- data.frame(game_id = game_ids)
 
-    teams_df <- suppressWarnings(purrr::map_dfr(game_ids,
-                           function(x) {
-                             teams <- paste0("http://www.espn.com/soccer/match?gameId=", x) %>%
-                               xml2::read_html() %>%
+    teams_df <- game_ids %>% 
+      purrr::map_dfr(function(x) {
+                             temp <- paste0("http://www.espn.com/soccer/match?gameId=", x) %>%
+                               xml2::read_html() 
+                             teams=temp %>%
                                rvest::html_nodes(".short-name") %>%
                                rvest::html_text()
-
-                             # Return as data frame:
-                             data.frame(team_one = teams[1],
-                                        team_two = teams[2])
-                             }))
+                             game_temp=data.frame(home=teams[1],away=teams[2])
+                              temp_node=temp%>%
+                                rvest::html_nodes("span.score.icon-font-after")
+                              game_temp=game_temp %>%
+                                mutate(home_score=temp_node %>% 
+                                         rvest::html_text() %>% 
+                                         stringr::str_extract(stringr::regex("[0-9]")))
+                              temp_node=temp%>%
+                                rvest::html_nodes("span.score.icon-font-before")
+                              game_temp=game_temp %>%
+                                mutate(away_score=temp_node %>% 
+                                         rvest::html_text() %>% 
+                                         stringr::str_extract(stringr::regex("[0-9]")))
+                              temp_node=temp%>%
+                                rvest::html_nodes("div.game-details:nth-child(1)")
+                              game_temp=game_temp %>%
+                                mutate(competition= temp_node %>% 
+                                         rvest::html_text() %>% 
+                                         stringr::str_replace_all(stringr::regex("\\n"),"") %>%
+                                         trimws())
+                             })
 
     # Cbind together and return:
     games_df %>%
       dplyr::bind_cols(teams_df) %>%
+      mutate(game_date=game_date) %>% 
       return
 
   }
