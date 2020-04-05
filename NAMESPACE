@@ -2,3 +2,4 @@
 
 export(scrape_commentary)
 export(scrape_scoreboard_ids)
+export(transform_commentary)
